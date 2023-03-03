@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 )
 
 const (
@@ -36,16 +37,37 @@ func displayHelp() {
     ` + yellowColor + boldText + "-k" + resetColor + `       Keyword to search ` + redColor + `(required)` + resetColor + `
     ` + yellowColor + boldText + "-f" + resetColor + `       File containing a list of keywords ` + magentaColor + `(optional)` + resetColor + `
     ` + yellowColor + boldText + "-o" + resetColor + `       Output filename ` + redColor + `(required)` + resetColor + `
+    ` + yellowColor + boldText + "-t" + resetColor + `       Number of threads to use` + cyanColor + ` (default 5)` + resetColor + `
     ` + yellowColor + boldText + "help" + resetColor + `     Display this help message `
 	fmt.Println(helpText)
+}
+
+func resolveDomain(domain string, wg *sync.WaitGroup, output *os.File) {
+	defer wg.Done()
+
+	resp, err := http.Get("https://" + domain)
+	if err != nil {
+		resp, err = http.Get("http://" + domain)
+		if err != nil {
+			return
+		}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 200 || resp.StatusCode == 302 || resp.StatusCode == 303 || resp.StatusCode == 401 || resp.StatusCode == 404 || resp.StatusCode == 403 || resp.StatusCode == 500 {
+		fmt.Println(resp.Request.URL.Scheme+"://"+domain, resp.StatusCode)
+		output.WriteString(resp.Request.URL.Scheme + "://" + resp.Request.URL.Host + "\n")
+	}
 }
 
 func main() {
 	var tld []string
 	var finalFile, keyword, keywordFile string
+	var numThreads int
 	flag.StringVar(&finalFile, "o", "", "Output Filename is required.")
 	flag.StringVar(&keyword, "k", "", "Keyword is required")
 	flag.StringVar(&keywordFile, "f", "", "File containing list of keywords")
+	flag.IntVar(&numThreads, "t", 5, "Number of threads to use")
 	flag.Parse()
 
 	if len(os.Args) == 1 || os.Args[1] == "help" || os.Args[1] == "-h" {
@@ -79,21 +101,22 @@ func main() {
 	}
 	defer output.Close()
 
+	var wg sync.WaitGroup
+	wg.Add(len(tld))
+
+	queue := make(chan string, len(tld))
 	for _, uros := range tld {
-		domain := keyword + "." + uros
-
-		resp, err := http.Get("https://" + domain)
-		if err != nil {
-			resp, err = http.Get("http://" + domain)
-			if err != nil {
-				continue
-			}
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode == 200 || resp.StatusCode == 302 || resp.StatusCode == 303 || resp.StatusCode == 401 || resp.StatusCode == 404 || resp.StatusCode == 403 || resp.StatusCode == 500 {
-			fmt.Println(resp.Request.URL.Scheme+"://"+domain, resp.StatusCode)
-			output.WriteString(resp.Request.URL.Scheme + "://" + resp.Request.URL.Host + "\n")
-		}
+		queue <- keyword + "." + uros
 	}
+	close(queue)
+
+	for i := 0; i < numThreads; i++ {
+		go func() {
+			for domain := range queue {
+				resolveDomain(domain, &wg, output)
+			}
+		}()
+	}
+
+	wg.Wait()
 }
