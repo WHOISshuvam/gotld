@@ -7,7 +7,7 @@
 
 - Using go ( Assuming you have set `$GOPATH`)
 ```bash
-$ go get -v github.com/WHOISshuvam/gotld
+go install github.com/WHOISshuvam/gotld@latest
 ```
 - From source
 ```bash
@@ -17,7 +17,7 @@ $ go build .
 ```
 
 # Usages 💡
-- Helpmenu ( No arguments )
+- Help Menu ( No arguments )
 
 ![](/extras/help.png)
 
