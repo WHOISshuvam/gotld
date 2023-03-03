@@ -19,7 +19,7 @@ $ go build .
 # Usages 💡
 - Helpmenu ( No arguments )
 
-![](https://0x0.st/Hz99.png)
+![](/extras/help.png)
 
 - default scans ( No custom keywords)
 ```
@@ -27,14 +27,14 @@ $ gotld -k <keyword> -o <output>
 ```
 
 
-![](https://0x0.st/Hz9L.png)
+![](/extras/withoutfile.png)
 
 - User defined custom keywords file
 ```
 $ gotld -k <keyword> -f <wordlist>  -o <output>
 ```
 
-![](https://0x0.st/Hz9O.png)
+![](/extras/withfile.png)
 
 # Thanks 🌺
 Thanks to [pwnwriter](https://github.com/pwnwriter) for code/ui `improvement` and  custom `wordlist` options.
