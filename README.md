@@ -7,7 +7,7 @@
 
 - Using go ( Assuming you have set `$GOPATH`)
 ```bash
-go install github.com/WHOISshuvam/gotld@latest
+$ go install github.com/WHOISshuvam/gotld@latest
 ```
 - From source
 ```bash
@@ -29,12 +29,18 @@ $ gotld -k <keyword> -o <output>
 
 ![](/extras/withoutfile.png)
 
-- User defined custom keywords file
+- User defined custom `wordlist` file
 ```
 $ gotld -k <keyword> -f <wordlist>  -o <output>
 ```
 
 ![](/extras/withfile.png)
+
+- Number of threads to use `(default 5)`
+```
+$ gotld -k <keyword> -t <number of threads> -o <output>
+```
+![](/extras/threads.png)
 
 # Thanks 🌺
 Thanks to [pwnwriter](https://github.com/pwnwriter) for code/ui `improvement` and  custom `wordlist` options.
